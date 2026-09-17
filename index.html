@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ONLINE ARENA</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+      font-family: Arial, sans-serif;
+    }
+
+    #game {
+      width: 100%;
+      height: 100%;
+    }
+
+    #title {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 2px 5px #000;
+    }
+
+    #info {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      color: white;
+      text-align: right;
+      text-shadow: 0 2px 5px #000;
+      line-height: 1.6;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="title">ONLINE ARENA</div>
+
+  <div id="info">
+    PLAYER: 1<br>
+    PLAYERS: 1 / 8<br>
+    WAITING
+  </div>
+
+  <div id="game"></div>
+
+  <script type="module">
+    import * as THREE from
+      "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+    // -------------------------
+    // Scene
+    // -------------------------
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb);
+
+    // -------------------------
+    // Camera
+    // -------------------------
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    camera.position.set(0, 3, 8);
+
+    // -------------------------
+    // Renderer
+    // -------------------------
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    document
+      .getElementById("game")
+      .appendChild(renderer.domElement);
+
+    // -------------------------
+    // Lighting
+    // -------------------------
+
+    const ambientLight = new THREE.AmbientLight(
+      0xffffff,
+      0.7
+    );
+
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(
+      0xffffff,
+      1
+    );
+
+    directionalLight.position.set(10, 20, 10);
+    scene.add(directionalLight);
+
+    // -------------------------
+    // Ground
+    // -------------------------
+
+    const groundGeometry = new THREE.BoxGeometry(
+      30,
+      0.5,
+      30
+    );
+
+    const groundMaterial = new THREE.MeshStandardMaterial({
+      color: 0x444444
+    });
+
+    const ground = new THREE.Mesh(
+      groundGeometry,
+      groundMaterial
+    );
+
+    ground.position.y = -0.25;
+
+    scene.add(ground);
+
+    // -------------------------
+    // Walls
+    // -------------------------
+
+    const wallMaterial = new THREE.MeshStandardMaterial({
+      color: 0x666666
+    });
+
+    function createWall(x, y, z, width, height, depth) {
+
+      const geometry = new THREE.BoxGeometry(
+        width,
+        height,
+        depth
+      );
+
+      const wall = new THREE.Mesh(
+        geometry,
+        wallMaterial
+      );
+
+      wall.position.set(x, y, z);
+
+      scene.add(wall);
+    }
+
+    createWall(0, 2, -15, 30, 4, 0.5);
+    createWall(0, 2, 15, 30, 4, 0.5);
+    createWall(-15, 2, 0, 0.5, 4, 30);
+    createWall(15, 2, 0, 0.5, 4, 30);
+
+    // -------------------------
+    // Obstacles
+    // -------------------------
+
+    function createObstacle(x, z, width, height, depth) {
+
+      const geometry = new THREE.BoxGeometry(
+        width,
+        height,
+        depth
+      );
+
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x888888
+      });
+
+      const obstacle = new THREE.Mesh(
+        geometry,
+        material
+      );
+
+      obstacle.position.set(
+        x,
+        height / 2,
+        z
+      );
+
+      scene.add(obstacle);
+    }
+
+    createObstacle(-6, -5, 4, 2, 2);
+    createObstacle(6, -5, 4, 2, 2);
+    createObstacle(-6, 5, 4, 3, 2);
+    createObstacle(6, 5, 4, 3, 2);
+    createObstacle(0, 0, 3, 2, 3);
+
+    // -------------------------
+    // Player
+    // -------------------------
+
+    const playerGeometry =
+      new THREE.CapsuleGeometry(0.5, 1, 4, 8);
+
+    const playerMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x00ff88
+      });
+
+    const player = new THREE.Mesh(
+      playerGeometry,
+      playerMaterial
+    );
+
+    player.position.set(0, 1, 8);
+
+    scene.add(player);
+
+    // -------------------------
+    // Animation
+    // -------------------------
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+
+      // 少しだけプレイヤーを回転させる
+      player.rotation.y += 0.01;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // -------------------------
+    // Resize
+    // -------------------------
+
+    window.addEventListener("resize", () => {
+
+      camera.aspect =
+        window.innerWidth / window.innerHeight;
+
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+      );
+    });
+
+  </script>
+
+</body>
+</html>
