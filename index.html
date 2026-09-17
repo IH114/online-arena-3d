@@ -7,12 +7,17 @@
   <title>ONLINE ARENA</title>
 
   <style>
-    html, body {
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
       margin: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #111;
+      background: #000;
       font-family: Arial, sans-serif;
     }
 
@@ -30,6 +35,7 @@
       font-size: 24px;
       font-weight: bold;
       text-shadow: 0 2px 5px #000;
+      pointer-events: none;
     }
 
     #info {
@@ -41,6 +47,33 @@
       text-align: right;
       text-shadow: 0 2px 5px #000;
       line-height: 1.6;
+      pointer-events: none;
+    }
+
+    #crosshair {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 4px black;
+      pointer-events: none;
+    }
+
+    #startMessage {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      z-index: 20;
+      color: white;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 12px 20px;
+      border-radius: 8px;
+      pointer-events: none;
     }
   </style>
 
@@ -56,22 +89,36 @@
     WAITING
   </div>
 
+  <div id="crosshair">+</div>
+
+  <div id="startMessage">
+    画面をクリックしてゲーム開始
+  </div>
+
   <div id="game"></div>
 
   <script type="module">
+
     import * as THREE from
       "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-    // -------------------------
-    // Scene
-    // -------------------------
+    // ========================================
+    // 基本設定
+    // ========================================
 
     const scene = new THREE.Scene();
+
     scene.background = new THREE.Color(0x87ceeb);
 
-    // -------------------------
-    // Camera
-    // -------------------------
+    scene.fog = new THREE.Fog(
+      0x87ceeb,
+      25,
+      80
+    );
+
+    // ========================================
+    // カメラ
+    // ========================================
 
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -80,116 +127,188 @@
       1000
     );
 
-    camera.position.set(0, 3, 8);
+    camera.position.set(
+      0,
+      1.7,
+      8
+    );
 
-    // -------------------------
-    // Renderer
-    // -------------------------
+    // ========================================
+    // レンダラー
+    // ========================================
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true
     });
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio, 2)
+    );
+
+    renderer.shadowMap.enabled = true;
 
     document
       .getElementById("game")
       .appendChild(renderer.domElement);
 
-    // -------------------------
-    // Lighting
-    // -------------------------
+    // ========================================
+    // ライト
+    // ========================================
 
-    const ambientLight = new THREE.AmbientLight(
-      0xffffff,
-      0.7
-    );
+    const ambientLight =
+      new THREE.AmbientLight(
+        0xffffff,
+        0.6
+      );
 
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(
-      0xffffff,
-      1
+    const sun =
+      new THREE.DirectionalLight(
+        0xffffff,
+        1.2
+      );
+
+    sun.position.set(
+      10,
+      25,
+      10
     );
 
-    directionalLight.position.set(10, 20, 10);
-    scene.add(directionalLight);
+    sun.castShadow = true;
 
-    // -------------------------
-    // Ground
-    // -------------------------
+    scene.add(sun);
 
-    const groundGeometry = new THREE.BoxGeometry(
-      30,
-      0.5,
-      30
-    );
+    // ========================================
+    // 地面
+    // ========================================
 
-    const groundMaterial = new THREE.MeshStandardMaterial({
-      color: 0x444444
-    });
+    const groundGeometry =
+      new THREE.BoxGeometry(
+        30,
+        0.5,
+        30
+      );
 
-    const ground = new THREE.Mesh(
-      groundGeometry,
-      groundMaterial
-    );
+    const groundMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x444444
+      });
+
+    const ground =
+      new THREE.Mesh(
+        groundGeometry,
+        groundMaterial
+      );
 
     ground.position.y = -0.25;
+    ground.receiveShadow = true;
 
     scene.add(ground);
 
-    // -------------------------
-    // Walls
-    // -------------------------
+    // ========================================
+    // 壁
+    // ========================================
 
-    const wallMaterial = new THREE.MeshStandardMaterial({
-      color: 0x666666
-    });
-
-    function createWall(x, y, z, width, height, depth) {
-
-      const geometry = new THREE.BoxGeometry(
-        width,
-        height,
-        depth
-      );
-
-      const wall = new THREE.Mesh(
-        geometry,
-        wallMaterial
-      );
-
-      wall.position.set(x, y, z);
-
-      scene.add(wall);
-    }
-
-    createWall(0, 2, -15, 30, 4, 0.5);
-    createWall(0, 2, 15, 30, 4, 0.5);
-    createWall(-15, 2, 0, 0.5, 4, 30);
-    createWall(15, 2, 0, 0.5, 4, 30);
-
-    // -------------------------
-    // Obstacles
-    // -------------------------
-
-    function createObstacle(x, z, width, height, depth) {
-
-      const geometry = new THREE.BoxGeometry(
-        width,
-        height,
-        depth
-      );
-
-      const material = new THREE.MeshStandardMaterial({
-        color: 0x888888
+    const wallMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x666666
       });
 
-      const obstacle = new THREE.Mesh(
-        geometry,
-        material
+    const walls = [];
+
+    function createWall(
+      x,
+      y,
+      z,
+      width,
+      height,
+      depth
+    ) {
+
+      const geometry =
+        new THREE.BoxGeometry(
+          width,
+          height,
+          depth
+        );
+
+      const wall =
+        new THREE.Mesh(
+          geometry,
+          wallMaterial
+        );
+
+      wall.position.set(
+        x,
+        y,
+        z
       );
+
+      wall.castShadow = true;
+      wall.receiveShadow = true;
+
+      scene.add(wall);
+
+      walls.push(wall);
+    }
+
+    createWall(
+      0, 2, -15,
+      30, 4, 0.5
+    );
+
+    createWall(
+      0, 2, 15,
+      30, 4, 0.5
+    );
+
+    createWall(
+      -15, 2, 0,
+      0.5, 4, 30
+    );
+
+    createWall(
+      15, 2, 0,
+      0.5, 4, 30
+    );
+
+    // ========================================
+    // 障害物
+    // ========================================
+
+    const obstacles = [];
+
+    function createObstacle(
+      x,
+      z,
+      width,
+      height,
+      depth
+    ) {
+
+      const geometry =
+        new THREE.BoxGeometry(
+          width,
+          height,
+          depth
+        );
+
+      const material =
+        new THREE.MeshStandardMaterial({
+          color: 0x888888
+        });
+
+      const obstacle =
+        new THREE.Mesh(
+          geometry,
+          material
+        );
 
       obstacle.position.set(
         x,
@@ -197,68 +316,301 @@
         z
       );
 
+      obstacle.castShadow = true;
+      obstacle.receiveShadow = true;
+
       scene.add(obstacle);
+
+      obstacles.push(obstacle);
     }
 
-    createObstacle(-6, -5, 4, 2, 2);
-    createObstacle(6, -5, 4, 2, 2);
-    createObstacle(-6, 5, 4, 3, 2);
-    createObstacle(6, 5, 4, 3, 2);
-    createObstacle(0, 0, 3, 2, 3);
-
-    // -------------------------
-    // Player
-    // -------------------------
-
-    const playerGeometry =
-      new THREE.CapsuleGeometry(0.5, 1, 4, 8);
-
-    const playerMaterial =
-      new THREE.MeshStandardMaterial({
-        color: 0x00ff88
-      });
-
-    const player = new THREE.Mesh(
-      playerGeometry,
-      playerMaterial
+    createObstacle(
+      -6, -5,
+      4, 2, 2
     );
 
-    player.position.set(0, 1, 8);
+    createObstacle(
+      6, -5,
+      4, 2, 2
+    );
 
-    scene.add(player);
+    createObstacle(
+      -6, 5,
+      4, 3, 2
+    );
 
-    // -------------------------
-    // Animation
-    // -------------------------
+    createObstacle(
+      6, 5,
+      4, 3, 2
+    );
+
+    createObstacle(
+      0, 0,
+      3, 2, 3
+    );
+
+    // ========================================
+    // プレイヤー
+    // ========================================
+
+    const player = {
+      position: new THREE.Vector3(
+        0,
+        1.7,
+        8
+      ),
+
+      velocity: new THREE.Vector3(),
+
+      speed: 7,
+
+      yaw: 0,
+
+      pitch: 0
+    };
+
+    // ========================================
+    // キーボード入力
+    // ========================================
+
+    const keys = {};
+
+    window.addEventListener(
+      "keydown",
+      (event) => {
+
+        keys[event.code] = true;
+
+      }
+    );
+
+    window.addEventListener(
+      "keyup",
+      (event) => {
+
+        keys[event.code] = false;
+
+      }
+    );
+
+    // ========================================
+    // マウス操作
+    // ========================================
+
+    let pointerLocked = false;
+
+    renderer.domElement.addEventListener(
+      "click",
+      () => {
+
+        renderer.domElement.requestPointerLock();
+
+      }
+    );
+
+    document.addEventListener(
+      "pointerlockchange",
+      () => {
+
+        pointerLocked =
+          document.pointerLockElement ===
+          renderer.domElement;
+
+        document.getElementById(
+          "startMessage"
+        ).style.display =
+          pointerLocked
+            ? "none"
+            : "block";
+
+      }
+    );
+
+    document.addEventListener(
+      "mousemove",
+      (event) => {
+
+        if (!pointerLocked) {
+          return;
+        }
+
+        const sensitivity = 0.002;
+
+        player.yaw -=
+          event.movementX *
+          sensitivity;
+
+        player.pitch -=
+          event.movementY *
+          sensitivity;
+
+        const limit =
+          Math.PI / 2 - 0.05;
+
+        player.pitch =
+          Math.max(
+            -limit,
+            Math.min(
+              limit,
+              player.pitch
+            )
+          );
+
+      }
+    );
+
+    // ========================================
+    // 移動
+    // ========================================
+
+    const clock =
+      new THREE.Clock();
+
+    function updatePlayer(delta) {
+
+      const forward = new THREE.Vector3(
+        Math.sin(player.yaw),
+        0,
+        Math.cos(player.yaw)
+      );
+
+      const right = new THREE.Vector3(
+        Math.cos(player.yaw),
+        0,
+        -Math.sin(player.yaw)
+      );
+
+      const direction =
+        new THREE.Vector3();
+
+      if (keys["KeyW"]) {
+        direction.add(
+          forward
+        );
+      }
+
+      if (keys["KeyS"]) {
+        direction.sub(
+          forward
+        );
+      }
+
+      if (keys["KeyD"]) {
+        direction.add(
+          right
+        );
+      }
+
+      if (keys["KeyA"]) {
+        direction.sub(
+          right
+        );
+      }
+
+      if (direction.lengthSq() > 0) {
+
+        direction.normalize();
+
+        player.position.addScaledVector(
+          direction,
+          player.speed * delta
+        );
+
+      }
+
+      // ====================================
+      // マップ外に出ないようにする
+      // ====================================
+
+      const limit = 13.5;
+
+      player.position.x =
+        Math.max(
+          -limit,
+          Math.min(
+            limit,
+            player.position.x
+          )
+        );
+
+      player.position.z =
+        Math.max(
+          -limit,
+          Math.min(
+            limit,
+            player.position.z
+          )
+        );
+
+      // カメラ位置
+
+      camera.position.copy(
+        player.position
+      );
+
+      // 視点
+
+      camera.rotation.order =
+        "YXZ";
+
+      camera.rotation.y =
+        player.yaw;
+
+      camera.rotation.x =
+        player.pitch;
+
+    }
+
+    // ========================================
+    // ゲームループ
+    // ========================================
 
     function animate() {
 
-      requestAnimationFrame(animate);
+      requestAnimationFrame(
+        animate
+      );
 
-      // 少しだけプレイヤーを回転させる
-      player.rotation.y += 0.01;
+      const delta =
+        Math.min(
+          clock.getDelta(),
+          0.05
+        );
 
-      renderer.render(scene, camera);
+      updatePlayer(
+        delta
+      );
+
+      renderer.render(
+        scene,
+        camera
+      );
+
     }
 
     animate();
 
-    // -------------------------
-    // Resize
-    // -------------------------
+    // ========================================
+    // 画面サイズ変更
+    // ========================================
 
-    window.addEventListener("resize", () => {
+    window.addEventListener(
+      "resize",
+      () => {
 
-      camera.aspect =
-        window.innerWidth / window.innerHeight;
+        camera.aspect =
+          window.innerWidth /
+          window.innerHeight;
 
-      camera.updateProjectionMatrix();
+        camera.updateProjectionMatrix();
 
-      renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-      );
-    });
+        renderer.setSize(
+          window.innerWidth,
+          window.innerHeight
+        );
+
+      }
+    );
 
   </script>
 
