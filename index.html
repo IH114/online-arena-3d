@@ -31,73 +31,100 @@
       position: fixed;
       top: 20px;
       left: 20px;
-      z-index: 10;
+
       color: white;
+
       font-size: 24px;
       font-weight: bold;
-      text-shadow: 0 2px 5px #000;
+
+      text-shadow: 0 2px 5px black;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
     #info {
       position: fixed;
+
       top: 20px;
       right: 20px;
-      z-index: 10;
+
       color: white;
+
       text-align: right;
+
       line-height: 1.6;
-      text-shadow: 0 2px 5px #000;
+
+      text-shadow: 0 2px 5px black;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
     #crosshair {
       position: fixed;
+
       left: 50%;
       top: 50%;
+
       transform: translate(-50%, -50%);
-      z-index: 10;
+
       color: white;
+
       font-size: 25px;
       font-weight: bold;
-      text-shadow: 0 0 5px #000;
+
+      text-shadow: 0 0 5px black;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
     #startMessage {
       position: fixed;
+
       left: 50%;
       bottom: 40px;
+
       transform: translateX(-50%);
-      z-index: 20;
 
       padding: 14px 22px;
 
       color: white;
+
       background: rgba(0, 0, 0, 0.7);
 
       border-radius: 8px;
 
       font-size: 16px;
 
+      z-index: 20;
+
       pointer-events: none;
     }
 
     #controls {
       position: fixed;
+
       left: 20px;
       bottom: 20px;
-      z-index: 10;
-
-      padding: 10px 14px;
 
       color: white;
+
       background: rgba(0, 0, 0, 0.5);
+
+      padding: 10px 14px;
 
       border-radius: 6px;
 
       font-size: 13px;
+
       line-height: 1.5;
+
+      z-index: 10;
 
       pointer-events: none;
     }
@@ -141,6 +168,7 @@
       "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 
+
     // ==================================================
     // SCENE
     // ==================================================
@@ -158,6 +186,7 @@
       );
 
 
+
     // ==================================================
     // CAMERA
     // ==================================================
@@ -171,6 +200,7 @@
       );
 
     camera.rotation.order = "YXZ";
+
 
 
     // ==================================================
@@ -206,6 +236,7 @@
       );
 
 
+
     // ==================================================
     // LIGHT
     // ==================================================
@@ -219,6 +250,7 @@
     scene.add(
       ambientLight
     );
+
 
 
     const sun =
@@ -240,6 +272,7 @@
     );
 
 
+
     // ==================================================
     // MAP SETTINGS
     // ==================================================
@@ -249,6 +282,7 @@
     const PLAYER_HEIGHT = 1.7;
 
     const PLAYER_RADIUS = 0.45;
+
 
 
     // ==================================================
@@ -282,6 +316,7 @@
     );
 
 
+
     // ==================================================
     // GRID
     // ==================================================
@@ -301,6 +336,7 @@
     );
 
 
+
     // ==================================================
     // WALLS
     // ==================================================
@@ -310,33 +346,6 @@
         color: 0x666666
       });
 
-    const obstacles = [];
-
-
-    function addCollisionBox(
-      x,
-      z,
-      width,
-      depth
-    ) {
-
-      obstacles.push({
-
-        minX:
-          x - width / 2,
-
-        maxX:
-          x + width / 2,
-
-        minZ:
-          z - depth / 2,
-
-        maxZ:
-          z + depth / 2
-
-      });
-
-    }
 
 
     function createWall(
@@ -375,16 +384,11 @@
         wall
       );
 
-      addCollisionBox(
-        x,
-        z,
-        width,
-        depth
-      );
-
+      return wall;
     }
 
 
+
     createWall(
       0,
       2,
@@ -420,11 +424,16 @@
       4,
       30
     );
+
 
 
     // ==================================================
     // OBSTACLES
     // ==================================================
+
+    const obstacles = [];
+
+
 
     function createObstacle(
       x,
@@ -467,14 +476,31 @@
         mesh
       );
 
-      addCollisionBox(
-        x,
-        z,
-        width,
-        depth
-      );
 
+
+      obstacles.push({
+
+        mesh: mesh,
+
+        minX:
+          x - width / 2,
+
+        maxX:
+          x + width / 2,
+
+        minZ:
+          z - depth / 2,
+
+        maxZ:
+          z + depth / 2
+
+      });
+
+
+
+      return mesh;
     }
+
 
 
     createObstacle(
@@ -517,6 +543,8 @@
       3
     );
 
+
+
     createObstacle(
       0,
       -9,
@@ -526,6 +554,8 @@
       0x777777
     );
 
+
+
     createObstacle(
       0,
       9,
@@ -534,6 +564,7 @@
       1.5,
       0x777777
     );
+
 
 
     // ==================================================
@@ -558,16 +589,13 @@
     };
 
 
-    camera.position.copy(
-      player.position
-    );
-
 
     // ==================================================
     // KEYBOARD
     // ==================================================
 
     const keys = {};
+
 
 
     window.addEventListener(
@@ -580,6 +608,7 @@
     );
 
 
+
     window.addEventListener(
       "keyup",
       function(event) {
@@ -590,6 +619,7 @@
     );
 
 
+
     // ==================================================
     // POINTER LOCK
     // ==================================================
@@ -597,14 +627,12 @@
     let pointerLocked = false;
 
 
+
     renderer.domElement.addEventListener(
       "click",
       function() {
 
-        if (
-          document.pointerLockElement !==
-          renderer.domElement
-        ) {
+        if (!pointerLocked) {
 
           renderer
             .domElement
@@ -616,6 +644,7 @@
     );
 
 
+
     document.addEventListener(
       "pointerlockchange",
       function() {
@@ -625,19 +654,29 @@
           renderer.domElement;
 
 
+
         const message =
           document.getElementById(
             "startMessage"
           );
 
 
-        message.style.display =
-          pointerLocked
-            ? "none"
-            : "block";
+
+        if (pointerLocked) {
+
+          message.style.display =
+            "none";
+
+        } else {
+
+          message.style.display =
+            "block";
+
+        }
 
       }
     );
+
 
 
     // ==================================================
@@ -655,8 +694,10 @@
         }
 
 
+
         const sensitivity =
           0.002;
+
 
 
         player.yaw -=
@@ -664,14 +705,17 @@
           sensitivity;
 
 
+
         player.pitch -=
           event.movementY *
           sensitivity;
 
 
+
         const pitchLimit =
           Math.PI / 2 -
           0.05;
+
 
 
         player.pitch =
@@ -685,6 +729,7 @@
 
       }
     );
+
 
 
     // ==================================================
@@ -711,6 +756,7 @@
           );
 
 
+
         const closestZ =
           Math.max(
             obstacle.minZ,
@@ -721,17 +767,21 @@
           );
 
 
+
         const dx =
           x - closestX;
+
 
 
         const dz =
           z - closestZ;
 
 
+
         const distanceSquared =
           dx * dx +
           dz * dz;
+
 
 
         if (
@@ -747,9 +797,11 @@
       }
 
 
+
       return false;
 
     }
+
 
 
     // ==================================================
@@ -760,15 +812,15 @@
       movement
     ) {
 
-      // X方向
-
       let nextX =
         player.position.x +
         movement.x;
 
 
+
       let nextZ =
         player.position.z;
+
 
 
       if (
@@ -784,15 +836,16 @@
       }
 
 
-      // Z方向
 
       nextX =
         player.position.x;
 
 
+
       nextZ =
         player.position.z +
         movement.z;
+
 
 
       if (
@@ -808,12 +861,12 @@
       }
 
 
-      // アリーナ外に出ない
 
       const mapLimit =
         ARENA_SIZE / 2 -
         PLAYER_RADIUS -
         0.5;
+
 
 
       player.position.x =
@@ -822,6 +875,7 @@
           -mapLimit,
           mapLimit
         );
+
 
 
       player.position.z =
@@ -834,6 +888,7 @@
     }
 
 
+
     // ==================================================
     // UPDATE PLAYER
     // ==================================================
@@ -842,11 +897,8 @@
       delta
     ) {
 
-      /*
-       * このコードでは
-       * yaw = 0 のとき、
-       * forward は -Z方向。
-       */
+      // Three.jsではカメラ前方は
+      // -Z方向なので、この向きが正しい。
 
       const forward =
         new THREE.Vector3(
@@ -858,6 +910,7 @@
             player.yaw
           )
         );
+
 
 
       const right =
@@ -872,18 +925,15 @@
         );
 
 
+
       const direction =
         new THREE.Vector3();
 
 
-      // ==================================================
-      // W = 前進
-      // ==================================================
 
-      /*
-       * 元のコードではWが後ろだったため、
-       * Wではforwardの逆方向へ進ませる。
-       */
+      // ==================================================
+      // W = 後退
+      // ==================================================
 
       if (
         keys["KeyW"] ||
@@ -897,8 +947,9 @@
       }
 
 
+
       // ==================================================
-      // S = 後退
+      // S = 前進
       // ==================================================
 
       if (
@@ -913,9 +964,8 @@
       }
 
 
-      // ==================================================
+
       // D = 右
-      // ==================================================
 
       if (
         keys["KeyD"] ||
@@ -929,9 +979,8 @@
       }
 
 
-      // ==================================================
+
       // A = 左
-      // ==================================================
 
       if (
         keys["KeyA"] ||
@@ -945,21 +994,21 @@
       }
 
 
-      // ==================================================
-      // APPLY MOVEMENT
-      // ==================================================
 
       if (
-        direction.lengthSq() > 0
+        direction.lengthSq() >
+        0
       ) {
 
         direction.normalize();
+
 
 
         direction.multiplyScalar(
           player.speed *
           delta
         );
+
 
 
         movePlayer(
@@ -969,39 +1018,34 @@
       }
 
 
-      // ==================================================
-      // PLAYER HEIGHT
-      // ==================================================
+
+      // プレイヤーの高さ
 
       player.position.y =
         PLAYER_HEIGHT;
 
 
-      // ==================================================
-      // CAMERA POSITION
-      // ==================================================
+
+      // カメラ位置
 
       camera.position.copy(
         player.position
       );
 
 
-      // ==================================================
-      // CAMERA ROTATION
-      // ==================================================
 
-      camera.rotation.order =
-        "YXZ";
-
+      // カメラ回転
 
       camera.rotation.y =
         player.yaw;
+
 
 
       camera.rotation.x =
         player.pitch;
 
     }
+
 
 
     // ==================================================
@@ -1012,11 +1056,13 @@
       new THREE.Clock();
 
 
+
     function animate() {
 
       requestAnimationFrame(
         animate
       );
+
 
 
       const delta =
@@ -1026,9 +1072,11 @@
         );
 
 
+
       updatePlayer(
         delta
       );
+
 
 
       renderer.render(
@@ -1039,7 +1087,9 @@
     }
 
 
+
     animate();
+
 
 
     // ==================================================
@@ -1055,7 +1105,10 @@
           window.innerHeight;
 
 
-        camera.updateProjectionMatrix();
+
+        camera
+          .updateProjectionMatrix();
+
 
 
         renderer.setSize(
