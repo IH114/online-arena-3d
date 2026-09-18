@@ -931,38 +931,33 @@
 
 
 
-      // ==================================================
-      // W = 後退
-      // ==================================================
+// W = 後退
 
-      if (
-        keys["KeyW"] ||
-        keys["ArrowUp"]
-      ) {
+if (
+  keys["KeyW"] ||
+  keys["ArrowUp"]
+) {
 
-        direction.sub(
-          forward
-        );
+  direction.sub(
+    forward
+  );
 
-      }
+}
 
 
 
-      // ==================================================
-      // S = 前進
-      // ==================================================
+// S = 前進
 
-      if (
-        keys["KeyS"] ||
-        keys["ArrowDown"]
-      ) {
+if (
+  keys["KeyS"] ||
+  keys["ArrowDown"]
+) {
 
-        direction.add(
-          forward
-        );
+  direction.add(
+    forward
+  );
 
-      }
-
+}
 
 
       // D = 右
