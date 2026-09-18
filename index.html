@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -30,104 +31,92 @@
       position: fixed;
       top: 20px;
       left: 20px;
+      z-index: 10;
 
       color: white;
-
       font-size: 24px;
       font-weight: bold;
 
-      text-shadow: 0 2px 5px black;
-
-      z-index: 10;
+      text-shadow: 0 2px 5px #000;
 
       pointer-events: none;
     }
 
     #info {
       position: fixed;
-
       top: 20px;
       right: 20px;
+      z-index: 10;
 
       color: white;
-
       text-align: right;
-
       line-height: 1.6;
 
-      text-shadow: 0 2px 5px black;
-
-      z-index: 10;
+      text-shadow: 0 2px 5px #000;
 
       pointer-events: none;
     }
 
     #crosshair {
       position: fixed;
-
       left: 50%;
       top: 50%;
 
       transform: translate(-50%, -50%);
 
-      color: white;
+      z-index: 10;
 
+      color: white;
       font-size: 25px;
       font-weight: bold;
 
-      text-shadow: 0 0 5px black;
-
-      z-index: 10;
+      text-shadow: 0 0 5px #000;
 
       pointer-events: none;
     }
 
     #startMessage {
       position: fixed;
-
       left: 50%;
       bottom: 40px;
 
       transform: translateX(-50%);
 
+      z-index: 20;
+
       padding: 14px 22px;
 
       color: white;
-
       background: rgba(0, 0, 0, 0.7);
 
       border-radius: 8px;
 
       font-size: 16px;
 
-      z-index: 20;
-
       pointer-events: none;
     }
 
     #controls {
       position: fixed;
-
       left: 20px;
       bottom: 20px;
 
-      color: white;
-
-      background: rgba(0, 0, 0, 0.5);
+      z-index: 10;
 
       padding: 10px 14px;
+
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
 
       border-radius: 6px;
 
       font-size: 13px;
-
       line-height: 1.5;
-
-      z-index: 10;
 
       pointer-events: none;
     }
   </style>
+
 </head>
 
 <body>
@@ -159,7 +148,6 @@
   </div>
 
   <div id="game"></div>
-
 
   <script type="module">
 
@@ -328,6 +316,39 @@
 
 
     // ==================================================
+    // COLLISION OBJECTS
+    // ==================================================
+
+    const obstacles = [];
+
+
+    function addCollisionBox(
+      x,
+      z,
+      width,
+      depth
+    ) {
+
+      obstacles.push({
+
+        minX:
+          x - width / 2,
+
+        maxX:
+          x + width / 2,
+
+        minZ:
+          z - depth / 2,
+
+        maxZ:
+          z + depth / 2
+
+      });
+
+    }
+
+
+    // ==================================================
     // WALLS
     // ==================================================
 
@@ -373,7 +394,13 @@
         wall
       );
 
-      return wall;
+      addCollisionBox(
+        x,
+        z,
+        width,
+        depth
+      );
+
     }
 
 
@@ -418,9 +445,6 @@
     // OBSTACLES
     // ==================================================
 
-    const obstacles = [];
-
-
     function createObstacle(
       x,
       z,
@@ -462,27 +486,13 @@
         mesh
       );
 
+      addCollisionBox(
+        x,
+        z,
+        width,
+        depth
+      );
 
-      obstacles.push({
-
-        mesh: mesh,
-
-        minX:
-          x - width / 2,
-
-        maxX:
-          x + width / 2,
-
-        minZ:
-          z - depth / 2,
-
-        maxZ:
-          z + depth / 2
-
-      });
-
-
-      return mesh;
     }
 
 
@@ -526,7 +536,6 @@
       3
     );
 
-
     createObstacle(
       0,
       -9,
@@ -535,7 +544,6 @@
       1.5,
       0x777777
     );
-
 
     createObstacle(
       0,
@@ -570,6 +578,15 @@
 
 
     // ==================================================
+    // INITIAL CAMERA
+    // ==================================================
+
+    camera.position.copy(
+      player.position
+    );
+
+
+    // ==================================================
     // KEYBOARD
     // ==================================================
 
@@ -581,6 +598,14 @@
       function(event) {
 
         keys[event.code] = true;
+
+        if (
+          event.code === "Space"
+        ) {
+
+          event.preventDefault();
+
+        }
 
       }
     );
@@ -607,7 +632,10 @@
       "click",
       function() {
 
-        if (!pointerLocked) {
+        if (
+          document.pointerLockElement !==
+          renderer.domElement
+        ) {
 
           renderer
             .domElement
@@ -627,12 +655,10 @@
           document.pointerLockElement ===
           renderer.domElement;
 
-
         const message =
           document.getElementById(
             "startMessage"
           );
-
 
         if (pointerLocked) {
 
@@ -663,7 +689,6 @@
           return;
 
         }
-
 
         const sensitivity =
           0.002;
@@ -698,7 +723,7 @@
 
 
     // ==================================================
-    // COLLISION
+    // COLLISION CHECK
     // ==================================================
 
     function collides(
@@ -707,8 +732,7 @@
     ) {
 
       for (
-        const obstacle
-        of obstacles
+        const obstacle of obstacles
       ) {
 
         const closestX =
@@ -770,19 +794,17 @@
       movement
     ) {
 
-      let nextX =
+      // X方向
+
+      const nextX =
         player.position.x +
         movement.x;
-
-
-      let nextZ =
-        player.position.z;
 
 
       if (
         !collides(
           nextX,
-          nextZ
+          player.position.z
         )
       ) {
 
@@ -792,18 +814,16 @@
       }
 
 
-      nextX =
-        player.position.x;
+      // Z方向
 
-
-      nextZ =
+      const nextZ =
         player.position.z +
         movement.z;
 
 
       if (
         !collides(
-          nextX,
+          player.position.x,
           nextZ
         )
       ) {
@@ -813,6 +833,8 @@
 
       }
 
+
+      // マップ外へ出ない
 
       const mapLimit =
         ARENA_SIZE / 2 -
@@ -846,12 +868,23 @@
       delta
     ) {
 
-      // Three.jsではカメラ前方は
-      // -Z方向なので、この向きが正しい。
+      /*
+       * Three.jsのカメラは
+       * yaw = 0 のとき
+       * -Z方向を向く。
+       *
+       * そのため、
+       *
+       * W = -Z
+       * S = +Z
+       *
+       * になるように計算する。
+       */
+
 
       const forward =
         new THREE.Vector3(
-          -Math.sin(
+          Math.sin(
             player.yaw
           ),
           0,
@@ -867,7 +900,7 @@
             player.yaw
           ),
           0,
-          -Math.sin(
+            Math.sin(
             player.yaw
           )
         );
@@ -877,7 +910,9 @@
         new THREE.Vector3();
 
 
-      // W = 前進
+      // ==================================================
+      // W = FORWARD
+      // ==================================================
 
       if (
         keys["KeyW"] ||
@@ -891,7 +926,9 @@
       }
 
 
-      // S = 後退
+      // ==================================================
+      // S = BACKWARD
+      // ==================================================
 
       if (
         keys["KeyS"] ||
@@ -905,21 +942,9 @@
       }
 
 
-      // D = 右
-
-      if (
-        keys["KeyD"] ||
-        keys["ArrowRight"]
-      ) {
-
-        direction.add(
-          right
-        );
-
-      }
-
-
-      // A = 左
+      // ==================================================
+      // A = LEFT
+      // ==================================================
 
       if (
         keys["KeyA"] ||
@@ -933,9 +958,28 @@
       }
 
 
+      // ==================================================
+      // D = RIGHT
+      // ==================================================
+
       if (
-        direction.lengthSq() >
-        0
+        keys["KeyD"] ||
+        keys["ArrowRight"]
+      ) {
+
+        direction.add(
+          right
+        );
+
+      }
+
+
+      // ==================================================
+      // APPLY MOVEMENT
+      // ==================================================
+
+      if (
+        direction.lengthSq() > 0
       ) {
 
         direction.normalize();
@@ -954,20 +998,18 @@
       }
 
 
-      // プレイヤーの高さ
-
-      player.position.y =
-        PLAYER_HEIGHT;
-
-
-      // カメラ位置
+      // ==================================================
+      // CAMERA
+      // ==================================================
 
       camera.position.copy(
         player.position
       );
 
 
-      // カメラ回転
+      camera.rotation.order =
+        "YXZ";
+
 
       camera.rotation.y =
         player.yaw;
@@ -1018,7 +1060,7 @@
 
 
     // ==================================================
-    // RESIZE
+    // WINDOW RESIZE
     // ==================================================
 
     window.addEventListener(
@@ -1030,8 +1072,7 @@
           window.innerHeight;
 
 
-        camera
-          .updateProjectionMatrix();
+        camera.updateProjectionMatrix();
 
 
         renderer.setSize(
