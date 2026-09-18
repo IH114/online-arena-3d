@@ -79,6 +79,7 @@
       border-radius: 8px;
 
       font-size: 16px;
+
       pointer-events: none;
     }
 
@@ -240,7 +241,7 @@
 
 
     // ==================================================
-    // MAP
+    // MAP SETTINGS
     // ==================================================
 
     const ARENA_SIZE = 30;
@@ -254,16 +255,22 @@
     // GROUND
     // ==================================================
 
+    const groundGeometry =
+      new THREE.BoxGeometry(
+        ARENA_SIZE,
+        0.5,
+        ARENA_SIZE
+      );
+
+    const groundMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x444444
+      });
+
     const ground =
       new THREE.Mesh(
-        new THREE.BoxGeometry(
-          ARENA_SIZE,
-          0.5,
-          ARENA_SIZE
-        ),
-        new THREE.MeshStandardMaterial({
-          color: 0x444444
-        })
+        groundGeometry,
+        groundMaterial
       );
 
     ground.position.y = -0.25;
@@ -295,8 +302,13 @@
 
 
     // ==================================================
-    // COLLISION
+    // WALLS
     // ==================================================
+
+    const wallMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x666666
+      });
 
     const obstacles = [];
 
@@ -327,16 +339,6 @@
     }
 
 
-    // ==================================================
-    // WALLS
-    // ==================================================
-
-    const wallMaterial =
-      new THREE.MeshStandardMaterial({
-        color: 0x666666
-      });
-
-
     function createWall(
       x,
       y,
@@ -346,13 +348,16 @@
       depth
     ) {
 
+      const geometry =
+        new THREE.BoxGeometry(
+          width,
+          height,
+          depth
+        );
+
       const wall =
         new THREE.Mesh(
-          new THREE.BoxGeometry(
-            width,
-            height,
-            depth
-          ),
+          geometry,
           wallMaterial
         );
 
@@ -430,16 +435,22 @@
       color = 0x888888
     ) {
 
+      const geometry =
+        new THREE.BoxGeometry(
+          width,
+          height,
+          depth
+        );
+
+      const material =
+        new THREE.MeshStandardMaterial({
+          color: color
+        });
+
       const mesh =
         new THREE.Mesh(
-          new THREE.BoxGeometry(
-            width,
-            height,
-            depth
-          ),
-          new THREE.MeshStandardMaterial({
-            color: color
-          })
+          geometry,
+          material
         );
 
       mesh.position.set(
@@ -561,27 +572,9 @@
 
     window.addEventListener(
       "keydown",
-      (event) => {
+      function(event) {
 
         keys[event.code] = true;
-
-        if (
-          [
-            "KeyW",
-            "KeyA",
-            "KeyS",
-            "KeyD",
-            "ArrowUp",
-            "ArrowDown",
-            "ArrowLeft",
-            "ArrowRight",
-            "Space"
-          ].includes(event.code)
-        ) {
-
-          event.preventDefault();
-
-        }
 
       }
     );
@@ -589,7 +582,7 @@
 
     window.addEventListener(
       "keyup",
-      (event) => {
+      function(event) {
 
         keys[event.code] = false;
 
@@ -606,14 +599,16 @@
 
     renderer.domElement.addEventListener(
       "click",
-      () => {
+      function() {
 
         if (
           document.pointerLockElement !==
           renderer.domElement
         ) {
 
-          renderer.domElement.requestPointerLock();
+          renderer
+            .domElement
+            .requestPointerLock();
 
         }
 
@@ -623,7 +618,7 @@
 
     document.addEventListener(
       "pointerlockchange",
-      () => {
+      function() {
 
         pointerLocked =
           document.pointerLockElement ===
@@ -651,7 +646,7 @@
 
     document.addEventListener(
       "mousemove",
-      (event) => {
+      function(event) {
 
         if (!pointerLocked) {
 
@@ -674,16 +669,18 @@
           sensitivity;
 
 
-        const limit =
+        const pitchLimit =
           Math.PI / 2 -
           0.05;
 
 
         player.pitch =
-          THREE.MathUtils.clamp(
-            player.pitch,
-            -limit,
-            limit
+          Math.max(
+            -pitchLimit,
+            Math.min(
+              pitchLimit,
+              player.pitch
+            )
           );
 
       }
@@ -691,7 +688,7 @@
 
 
     // ==================================================
-    // COLLISION CHECK
+    // COLLISION
     // ==================================================
 
     function collides(
@@ -700,7 +697,8 @@
     ) {
 
       for (
-        const obstacle of obstacles
+        const obstacle
+        of obstacles
       ) {
 
         const closestX =
@@ -731,8 +729,13 @@
           z - closestZ;
 
 
+        const distanceSquared =
+          dx * dx +
+          dz * dz;
+
+
         if (
-          dx * dx + dz * dz <
+          distanceSquared <
           PLAYER_RADIUS *
           PLAYER_RADIUS
         ) {
@@ -750,172 +753,62 @@
 
 
     // ==================================================
-    // MOVEMENT
+    // PLAYER MOVEMENT
     // ==================================================
 
-    function updatePlayer(
-      delta
+    function movePlayer(
+      movement
     ) {
 
-      /*
-       * プレイヤーが向いている方向を取得。
-       *
-       * yaw = 0
-       * → 正面は -Z
-       */
+      // X方向
 
-      const forward =
-        new THREE.Vector3(
-          0,
-          0,
-          -1
-        );
+      let nextX =
+        player.position.x +
+        movement.x;
 
 
-      forward.applyAxisAngle(
-        new THREE.Vector3(0, 1, 0),
-        player.yaw
-      );
+      let nextZ =
+        player.position.z;
 
-
-      const right =
-        new THREE.Vector3(
-          1,
-          0,
-          0
-        );
-
-
-      right.applyAxisAngle(
-        new THREE.Vector3(0, 1, 0),
-        player.yaw
-      );
-
-
-      const movement =
-        new THREE.Vector3();
-
-
-      // W
 
       if (
-        keys["KeyW"] ||
-        keys["ArrowUp"]
+        !collides(
+          nextX,
+          nextZ
+        )
       ) {
 
-        movement.add(
-          forward
-        );
+        player.position.x =
+          nextX;
 
       }
 
 
-      // S
+      // Z方向
+
+      nextX =
+        player.position.x;
+
+
+      nextZ =
+        player.position.z +
+        movement.z;
+
 
       if (
-        keys["KeyS"] ||
-        keys["ArrowDown"]
+        !collides(
+          nextX,
+          nextZ
+        )
       ) {
 
-        movement.sub(
-          forward
-        );
+        player.position.z =
+          nextZ;
 
       }
 
 
-      // A
-
-      if (
-        keys["KeyA"] ||
-        keys["ArrowLeft"]
-      ) {
-
-        movement.sub(
-          right
-        );
-
-      }
-
-
-      // D
-
-      if (
-        keys["KeyD"] ||
-        keys["ArrowRight"]
-      ) {
-
-        movement.add(
-          right
-        );
-
-      }
-
-
-      // 移動
-
-      if (
-        movement.lengthSq() > 0
-      ) {
-
-        movement.normalize();
-
-
-        const distance =
-          player.speed *
-          delta;
-
-
-        movement.multiplyScalar(
-          distance
-        );
-
-
-        const nextX =
-          player.position.x +
-          movement.x;
-
-
-        const nextZ =
-          player.position.z +
-          movement.z;
-
-
-        // X
-
-        if (
-          !collides(
-            nextX,
-            player.position.z
-          )
-        ) {
-
-          player.position.x =
-            nextX;
-
-        }
-
-
-        // Z
-
-        if (
-          !collides(
-            player.position.x,
-            nextZ
-          )
-        ) {
-
-          player.position.z =
-            nextZ;
-
-        }
-
-      }
-
-
-      // ==================================================
-      // MAP LIMIT
-      // ==================================================
+      // アリーナ外に出ない
 
       const mapLimit =
         ARENA_SIZE / 2 -
@@ -938,15 +831,164 @@
           mapLimit
         );
 
+    }
+
+
+    // ==================================================
+    // UPDATE PLAYER
+    // ==================================================
+
+    function updatePlayer(
+      delta
+    ) {
+
+      /*
+       * このコードでは
+       * yaw = 0 のとき、
+       * forward は -Z方向。
+       */
+
+      const forward =
+        new THREE.Vector3(
+          -Math.sin(
+            player.yaw
+          ),
+          0,
+          -Math.cos(
+            player.yaw
+          )
+        );
+
+
+      const right =
+        new THREE.Vector3(
+          Math.cos(
+            player.yaw
+          ),
+          0,
+          -Math.sin(
+            player.yaw
+          )
+        );
+
+
+      const direction =
+        new THREE.Vector3();
+
 
       // ==================================================
-      // CAMERA
+      // W = 前進
+      // ==================================================
+
+      /*
+       * 元のコードではWが後ろだったため、
+       * Wではforwardの逆方向へ進ませる。
+       */
+
+      if (
+        keys["KeyW"] ||
+        keys["ArrowUp"]
+      ) {
+
+        direction.sub(
+          forward
+        );
+
+      }
+
+
+      // ==================================================
+      // S = 後退
+      // ==================================================
+
+      if (
+        keys["KeyS"] ||
+        keys["ArrowDown"]
+      ) {
+
+        direction.add(
+          forward
+        );
+
+      }
+
+
+      // ==================================================
+      // D = 右
+      // ==================================================
+
+      if (
+        keys["KeyD"] ||
+        keys["ArrowRight"]
+      ) {
+
+        direction.add(
+          right
+        );
+
+      }
+
+
+      // ==================================================
+      // A = 左
+      // ==================================================
+
+      if (
+        keys["KeyA"] ||
+        keys["ArrowLeft"]
+      ) {
+
+        direction.sub(
+          right
+        );
+
+      }
+
+
+      // ==================================================
+      // APPLY MOVEMENT
+      // ==================================================
+
+      if (
+        direction.lengthSq() > 0
+      ) {
+
+        direction.normalize();
+
+
+        direction.multiplyScalar(
+          player.speed *
+          delta
+        );
+
+
+        movePlayer(
+          direction
+        );
+
+      }
+
+
+      // ==================================================
+      // PLAYER HEIGHT
+      // ==================================================
+
+      player.position.y =
+        PLAYER_HEIGHT;
+
+
+      // ==================================================
+      // CAMERA POSITION
       // ==================================================
 
       camera.position.copy(
         player.position
       );
 
+
+      // ==================================================
+      // CAMERA ROTATION
+      // ==================================================
 
       camera.rotation.order =
         "YXZ";
@@ -1006,7 +1048,7 @@
 
     window.addEventListener(
       "resize",
-      () => {
+      function() {
 
         camera.aspect =
           window.innerWidth /
