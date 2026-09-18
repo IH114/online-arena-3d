@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>ONLINE ARENA</title>
 
   <style>
@@ -30,58 +30,111 @@
       position: fixed;
       top: 20px;
       left: 20px;
-      z-index: 10;
+
       color: white;
+
       font-size: 24px;
       font-weight: bold;
-      text-shadow: 0 2px 5px #000;
+
+      text-shadow: 0 2px 5px black;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
     #info {
       position: fixed;
+
       top: 20px;
       right: 20px;
-      z-index: 10;
+
       color: white;
+
       text-align: right;
-      text-shadow: 0 2px 5px #000;
+
       line-height: 1.6;
+
+      text-shadow: 0 2px 5px black;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
     #crosshair {
       position: fixed;
+
       left: 50%;
       top: 50%;
+
       transform: translate(-50%, -50%);
-      z-index: 10;
+
       color: white;
-      font-size: 24px;
+
+      font-size: 25px;
       font-weight: bold;
-      text-shadow: 0 0 4px #000;
+
+      text-shadow: 0 0 5px black;
+
+      z-index: 10;
+
       pointer-events: none;
     }
 
     #startMessage {
       position: fixed;
+
       left: 50%;
       bottom: 40px;
+
       transform: translateX(-50%);
-      z-index: 20;
+
+      padding: 14px 22px;
+
       color: white;
-      background: rgba(0, 0, 0, 0.65);
-      padding: 12px 20px;
+
+      background: rgba(0, 0, 0, 0.7);
+
       border-radius: 8px;
+
+      font-size: 16px;
+
+      z-index: 20;
+
+      pointer-events: none;
+    }
+
+    #controls {
+      position: fixed;
+
+      left: 20px;
+      bottom: 20px;
+
+      color: white;
+
+      background: rgba(0, 0, 0, 0.5);
+
+      padding: 10px 14px;
+
+      border-radius: 6px;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+
+      z-index: 10;
+
       pointer-events: none;
     }
   </style>
-
 </head>
 
 <body>
 
-  <div id="title">ONLINE ARENA</div>
+  <div id="title">
+    ONLINE ARENA
+  </div>
 
   <div id="info">
     PLAYER: 1<br>
@@ -89,53 +142,71 @@
     WAITING
   </div>
 
-  <div id="crosshair">+</div>
+  <div id="crosshair">
+    +
+  </div>
 
   <div id="startMessage">
     画面をクリックしてゲーム開始
   </div>
 
+  <div id="controls">
+    W：前進<br>
+    S：後退<br>
+    A：左<br>
+    D：右<br>
+    ESC：マウス解除
+  </div>
+
   <div id="game"></div>
+
 
   <script type="module">
 
     import * as THREE from
       "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-    // ========================================
-    // Scene
-    // ========================================
+
+    // ==================================================
+    // SCENE
+    // ==================================================
 
     const scene = new THREE.Scene();
 
-    scene.background = new THREE.Color(0x87ceeb);
+    scene.background =
+      new THREE.Color(0x87ceeb);
 
-    scene.fog = new THREE.Fog(
-      0x87ceeb,
-      25,
-      80
-    );
+    scene.fog =
+      new THREE.Fog(
+        0x87ceeb,
+        30,
+        90
+      );
 
-    // ========================================
-    // Camera
-    // ========================================
 
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
+    // ==================================================
+    // CAMERA
+    // ==================================================
 
-    camera.position.set(0, 1.7, 8);
+    const camera =
+      new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
 
-    // ========================================
-    // Renderer
-    // ========================================
+    camera.rotation.order = "YXZ";
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true
-    });
+
+    // ==================================================
+    // RENDERER
+    // ==================================================
+
+    const renderer =
+      new THREE.WebGLRenderer({
+        antialias: true
+      });
 
     renderer.setSize(
       window.innerWidth,
@@ -143,67 +214,128 @@
     );
 
     renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, 2)
+      Math.min(
+        window.devicePixelRatio,
+        2
+      )
     );
 
     renderer.shadowMap.enabled = true;
 
+    renderer.shadowMap.type =
+      THREE.PCFSoftShadowMap;
+
     document
       .getElementById("game")
-      .appendChild(renderer.domElement);
+      .appendChild(
+        renderer.domElement
+      );
 
-    // ========================================
-    // Lighting
-    // ========================================
 
-    const ambientLight = new THREE.AmbientLight(
-      0xffffff,
-      0.6
+    // ==================================================
+    // LIGHT
+    // ==================================================
+
+    const ambientLight =
+      new THREE.AmbientLight(
+        0xffffff,
+        0.7
+      );
+
+    scene.add(
+      ambientLight
     );
 
-    scene.add(ambientLight);
 
-    const sun = new THREE.DirectionalLight(
-      0xffffff,
-      1.2
+    const sun =
+      new THREE.DirectionalLight(
+        0xffffff,
+        1.3
+      );
+
+    sun.position.set(
+      15,
+      25,
+      10
     );
 
-    sun.position.set(10, 25, 10);
     sun.castShadow = true;
 
-    scene.add(sun);
-
-    // ========================================
-    // Ground
-    // ========================================
-
-    const groundGeometry = new THREE.BoxGeometry(
-      30,
-      0.5,
-      30
+    scene.add(
+      sun
     );
 
-    const groundMaterial = new THREE.MeshStandardMaterial({
-      color: 0x444444
-    });
 
-    const ground = new THREE.Mesh(
-      groundGeometry,
-      groundMaterial
-    );
+    // ==================================================
+    // MAP SETTINGS
+    // ==================================================
+
+    const ARENA_SIZE = 30;
+
+    const PLAYER_HEIGHT = 1.7;
+
+    const PLAYER_RADIUS = 0.45;
+
+
+    // ==================================================
+    // GROUND
+    // ==================================================
+
+    const groundGeometry =
+      new THREE.BoxGeometry(
+        ARENA_SIZE,
+        0.5,
+        ARENA_SIZE
+      );
+
+    const groundMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x444444
+      });
+
+    const ground =
+      new THREE.Mesh(
+        groundGeometry,
+        groundMaterial
+      );
 
     ground.position.y = -0.25;
+
     ground.receiveShadow = true;
 
-    scene.add(ground);
+    scene.add(
+      ground
+    );
 
-    // ========================================
-    // Walls
-    // ========================================
 
-    const wallMaterial = new THREE.MeshStandardMaterial({
-      color: 0x666666
-    });
+    // ==================================================
+    // GRID
+    // ==================================================
+
+    const grid =
+      new THREE.GridHelper(
+        ARENA_SIZE,
+        30,
+        0x666666,
+        0x555555
+      );
+
+    grid.position.y = 0.01;
+
+    scene.add(
+      grid
+    );
+
+
+    // ==================================================
+    // WALLS
+    // ==================================================
+
+    const wallMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x666666
+      });
+
 
     function createWall(
       x,
@@ -214,120 +346,278 @@
       depth
     ) {
 
-      const geometry = new THREE.BoxGeometry(
-        width,
-        height,
-        depth
-      );
+      const geometry =
+        new THREE.BoxGeometry(
+          width,
+          height,
+          depth
+        );
 
-      const wall = new THREE.Mesh(
-        geometry,
-        wallMaterial
-      );
+      const wall =
+        new THREE.Mesh(
+          geometry,
+          wallMaterial
+        );
 
-      wall.position.set(x, y, z);
+      wall.position.set(
+        x,
+        y,
+        z
+      );
 
       wall.castShadow = true;
+
       wall.receiveShadow = true;
 
-      scene.add(wall);
+      scene.add(
+        wall
+      );
+
+      return wall;
     }
 
-    createWall(0, 2, -15, 30, 4, 0.5);
-    createWall(0, 2, 15, 30, 4, 0.5);
-    createWall(-15, 2, 0, 0.5, 4, 30);
-    createWall(15, 2, 0, 0.5, 4, 30);
 
-    // ========================================
-    // Obstacles
-    // ========================================
+    createWall(
+      0,
+      2,
+      -15,
+      30,
+      4,
+      0.5
+    );
+
+    createWall(
+      0,
+      2,
+      15,
+      30,
+      4,
+      0.5
+    );
+
+    createWall(
+      -15,
+      2,
+      0,
+      0.5,
+      4,
+      30
+    );
+
+    createWall(
+      15,
+      2,
+      0,
+      0.5,
+      4,
+      30
+    );
+
+
+    // ==================================================
+    // OBSTACLES
+    // ==================================================
+
+    const obstacles = [];
+
 
     function createObstacle(
       x,
       z,
       width,
       height,
-      depth
+      depth,
+      color = 0x888888
     ) {
 
-      const geometry = new THREE.BoxGeometry(
-        width,
-        height,
-        depth
-      );
+      const geometry =
+        new THREE.BoxGeometry(
+          width,
+          height,
+          depth
+        );
 
-      const material = new THREE.MeshStandardMaterial({
-        color: 0x888888
-      });
+      const material =
+        new THREE.MeshStandardMaterial({
+          color: color
+        });
 
-      const obstacle = new THREE.Mesh(
-        geometry,
-        material
-      );
+      const mesh =
+        new THREE.Mesh(
+          geometry,
+          material
+        );
 
-      obstacle.position.set(
+      mesh.position.set(
         x,
         height / 2,
         z
       );
 
-      obstacle.castShadow = true;
-      obstacle.receiveShadow = true;
+      mesh.castShadow = true;
 
-      scene.add(obstacle);
+      mesh.receiveShadow = true;
+
+      scene.add(
+        mesh
+      );
+
+
+      obstacles.push({
+
+        mesh: mesh,
+
+        minX:
+          x - width / 2,
+
+        maxX:
+          x + width / 2,
+
+        minZ:
+          z - depth / 2,
+
+        maxZ:
+          z + depth / 2
+
+      });
+
+
+      return mesh;
     }
 
-    createObstacle(-6, -5, 4, 2, 2);
-    createObstacle(6, -5, 4, 2, 2);
-    createObstacle(-6, 5, 4, 3, 2);
-    createObstacle(6, 5, 4, 3, 2);
-    createObstacle(0, 0, 3, 2, 3);
 
-    // ========================================
-    // Player
-    // ========================================
+    createObstacle(
+      -6,
+      -5,
+      4,
+      2,
+      2
+    );
+
+    createObstacle(
+      6,
+      -5,
+      4,
+      2,
+      2
+    );
+
+    createObstacle(
+      -6,
+      5,
+      4,
+      3,
+      2
+    );
+
+    createObstacle(
+      6,
+      5,
+      4,
+      3,
+      2
+    );
+
+    createObstacle(
+      0,
+      0,
+      3,
+      2,
+      3
+    );
+
+
+    createObstacle(
+      0,
+      -9,
+      7,
+      1.5,
+      1.5,
+      0x777777
+    );
+
+
+    createObstacle(
+      0,
+      9,
+      7,
+      1.5,
+      1.5,
+      0x777777
+    );
+
+
+    // ==================================================
+    // PLAYER
+    // ==================================================
 
     const player = {
-      position: new THREE.Vector3(0, 1.7, 8),
+
+      position:
+        new THREE.Vector3(
+          0,
+          PLAYER_HEIGHT,
+          10
+        ),
+
       speed: 7,
+
       yaw: 0,
+
       pitch: 0
+
     };
 
-    // ========================================
-    // Keyboard
-    // ========================================
+
+    // ==================================================
+    // KEYBOARD
+    // ==================================================
 
     const keys = {};
+
 
     window.addEventListener(
       "keydown",
       function(event) {
+
         keys[event.code] = true;
+
       }
     );
+
 
     window.addEventListener(
       "keyup",
       function(event) {
+
         keys[event.code] = false;
+
       }
     );
 
-    // ========================================
-    // Mouse / Pointer Lock
-    // ========================================
+
+    // ==================================================
+    // POINTER LOCK
+    // ==================================================
 
     let pointerLocked = false;
+
 
     renderer.domElement.addEventListener(
       "click",
       function() {
 
-        renderer.domElement.requestPointerLock();
+        if (!pointerLocked) {
+
+          renderer
+            .domElement
+            .requestPointerLock();
+
+        }
 
       }
     );
+
 
     document.addEventListener(
       "pointerlockchange",
@@ -337,41 +627,68 @@
           document.pointerLockElement ===
           renderer.domElement;
 
-        const message =
-          document.getElementById("startMessage");
 
-        message.style.display =
-          pointerLocked
-            ? "none"
-            : "block";
+        const message =
+          document.getElementById(
+            "startMessage"
+          );
+
+
+        if (pointerLocked) {
+
+          message.style.display =
+            "none";
+
+        } else {
+
+          message.style.display =
+            "block";
+
+        }
 
       }
     );
+
+
+    // ==================================================
+    // MOUSE LOOK
+    // ==================================================
 
     document.addEventListener(
       "mousemove",
       function(event) {
 
         if (!pointerLocked) {
+
           return;
+
         }
 
-        const sensitivity = 0.002;
+
+        const sensitivity =
+          0.002;
+
 
         player.yaw -=
-          event.movementX * sensitivity;
+          event.movementX *
+          sensitivity;
+
 
         player.pitch -=
-          event.movementY * sensitivity;
+          event.movementY *
+          sensitivity;
 
-        const limit =
-          Math.PI / 2 - 0.05;
+
+        const pitchLimit =
+          Math.PI / 2 -
+          0.05;
+
 
         player.pitch =
           Math.max(
-            -limit,
+            -pitchLimit,
             Math.min(
-              limit,
+              pitchLimit,
               player.pitch
             )
           );
@@ -379,101 +696,303 @@
       }
     );
 
-    // ========================================
-    // Player Movement
-    // ========================================
 
-    const clock = new THREE.Clock();
+    // ==================================================
+    // COLLISION
+    // ==================================================
 
-    function updatePlayer(delta) {
+    function collides(
+      x,
+      z
+    ) {
 
-      const forward = new THREE.Vector3(
-        Math.sin(player.yaw),
-        0,
-        Math.cos(player.yaw)
-      );
+      for (
+        const obstacle
+        of obstacles
+      ) {
 
-      const right = new THREE.Vector3(
-        Math.cos(player.yaw),
-        0,
-        -Math.sin(player.yaw)
-      );
+        const closestX =
+          Math.max(
+            obstacle.minX,
+            Math.min(
+              x,
+              obstacle.maxX
+            )
+          );
 
-      const direction = new THREE.Vector3();
 
-      if (keys["KeyW"]) {
-        direction.add(forward);
+        const closestZ =
+          Math.max(
+            obstacle.minZ,
+            Math.min(
+              z,
+              obstacle.maxZ
+            )
+          );
+
+
+        const dx =
+          x - closestX;
+
+
+        const dz =
+          z - closestZ;
+
+
+        const distanceSquared =
+          dx * dx +
+          dz * dz;
+
+
+        if (
+          distanceSquared <
+          PLAYER_RADIUS *
+          PLAYER_RADIUS
+        ) {
+
+          return true;
+
+        }
+
       }
 
-      if (keys["KeyS"]) {
-        direction.sub(forward);
+
+      return false;
+
+    }
+
+
+    // ==================================================
+    // PLAYER MOVEMENT
+    // ==================================================
+
+    function movePlayer(
+      movement
+    ) {
+
+      let nextX =
+        player.position.x +
+        movement.x;
+
+
+      let nextZ =
+        player.position.z;
+
+
+      if (
+        !collides(
+          nextX,
+          nextZ
+        )
+      ) {
+
+        player.position.x =
+          nextX;
+
       }
 
-      if (keys["KeyD"]) {
-        direction.add(right);
+
+      nextX =
+        player.position.x;
+
+
+      nextZ =
+        player.position.z +
+        movement.z;
+
+
+      if (
+        !collides(
+          nextX,
+          nextZ
+        )
+      ) {
+
+        player.position.z =
+          nextZ;
+
       }
 
-      if (keys["KeyA"]) {
-        direction.sub(right);
+
+      const mapLimit =
+        ARENA_SIZE / 2 -
+        PLAYER_RADIUS -
+        0.5;
+
+
+      player.position.x =
+        THREE.MathUtils.clamp(
+          player.position.x,
+          -mapLimit,
+          mapLimit
+        );
+
+
+      player.position.z =
+        THREE.MathUtils.clamp(
+          player.position.z,
+          -mapLimit,
+          mapLimit
+        );
+
+    }
+
+
+    // ==================================================
+    // UPDATE PLAYER
+    // ==================================================
+
+    function updatePlayer(
+      delta
+    ) {
+
+      // Three.jsではカメラ前方は
+      // -Z方向なので、この向きが正しい。
+
+      const forward =
+        new THREE.Vector3(
+          -Math.sin(
+            player.yaw
+          ),
+          0,
+          -Math.cos(
+            player.yaw
+          )
+        );
+
+
+      const right =
+        new THREE.Vector3(
+          Math.cos(
+            player.yaw
+          ),
+          0,
+          -Math.sin(
+            player.yaw
+          )
+        );
+
+
+      const direction =
+        new THREE.Vector3();
+
+
+      // W = 前進
+
+      if (
+        keys["KeyW"] ||
+        keys["ArrowUp"]
+      ) {
+
+        direction.add(
+          forward
+        );
+
       }
 
-      if (direction.lengthSq() > 0) {
+
+      // S = 後退
+
+      if (
+        keys["KeyS"] ||
+        keys["ArrowDown"]
+      ) {
+
+        direction.sub(
+          forward
+        );
+
+      }
+
+
+      // D = 右
+
+      if (
+        keys["KeyD"] ||
+        keys["ArrowRight"]
+      ) {
+
+        direction.add(
+          right
+        );
+
+      }
+
+
+      // A = 左
+
+      if (
+        keys["KeyA"] ||
+        keys["ArrowLeft"]
+      ) {
+
+        direction.sub(
+          right
+        );
+
+      }
+
+
+      if (
+        direction.lengthSq() >
+        0
+      ) {
 
         direction.normalize();
 
-        player.position.addScaledVector(
-          direction,
-          player.speed * delta
+
+        direction.multiplyScalar(
+          player.speed *
+          delta
+        );
+
+
+        movePlayer(
+          direction
         );
 
       }
 
-      // Keep player inside the arena
 
-      const limit = 13.5;
+      // プレイヤーの高さ
 
-      player.position.x =
-        Math.max(
-          -limit,
-          Math.min(
-            limit,
-            player.position.x
-          )
-        );
+      player.position.y =
+        PLAYER_HEIGHT;
 
-      player.position.z =
-        Math.max(
-          -limit,
-          Math.min(
-            limit,
-            player.position.z
-          )
-        );
 
-      // Camera position
+      // カメラ位置
 
       camera.position.copy(
         player.position
       );
 
-      // Camera rotation
 
-      camera.rotation.order = "YXZ";
+      // カメラ回転
 
       camera.rotation.y =
         player.yaw;
 
+
       camera.rotation.x =
         player.pitch;
+
     }
 
-    // ========================================
-    // Game Loop
-    // ========================================
+
+    // ==================================================
+    // GAME LOOP
+    // ==================================================
+
+    const clock =
+      new THREE.Clock();
+
 
     function animate() {
 
-      requestAnimationFrame(animate);
+      requestAnimationFrame(
+        animate
+      );
+
 
       const delta =
         Math.min(
@@ -481,19 +1000,26 @@
           0.05
         );
 
-      updatePlayer(delta);
+
+      updatePlayer(
+        delta
+      );
+
 
       renderer.render(
         scene,
         camera
       );
+
     }
+
 
     animate();
 
-    // ========================================
-    // Window Resize
-    // ========================================
+
+    // ==================================================
+    // RESIZE
+    // ==================================================
 
     window.addEventListener(
       "resize",
@@ -503,7 +1029,10 @@
           window.innerWidth /
           window.innerHeight;
 
-        camera.updateProjectionMatrix();
+
+        camera
+          .updateProjectionMatrix();
+
 
         renderer.setSize(
           window.innerWidth,
